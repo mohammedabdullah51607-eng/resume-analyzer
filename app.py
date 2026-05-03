@@ -3,6 +3,14 @@ import pdfplumber, docx, re, pickle, csv
 from pymongo import MongoClient
 from io import BytesIO
 from sklearn.metrics.pairwise import cosine_similarity
+import os
+
+# ===== NLTK FIX (IMPORTANT FOR RENDER) =====
+import nltk
+try:
+    nltk.data.find('corpora/stopwords')
+except:
+    nltk.download('stopwords')
 
 app = Flask(__name__)
 
@@ -10,10 +18,15 @@ app = Flask(__name__)
 models = pickle.load(open("models.pkl","rb"))
 vectorizer = pickle.load(open("vectorizer.pkl","rb"))
 
-# ===== DATABASE =====
-client = MongoClient("mongodb://localhost:27017/")
-db = client["resume_db"]
-collection = db["candidates"]
+# ===== DATABASE (SAFE FOR DEPLOYMENT) =====
+USE_DB = False  # 🔴 Set False for Render (no MongoDB)
+
+if USE_DB:
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client["resume_db"]
+    collection = db["candidates"]
+else:
+    collection = None
 
 # ===== ROUTES =====
 @app.route("/")
@@ -27,8 +40,10 @@ def admin():
 # ===== CLEAR DATA =====
 @app.route("/clear", methods=["POST"])
 def clear():
-    res = collection.delete_many({})
-    return jsonify({"message":"Data cleared","deleted":res.deleted_count})
+    if collection:
+        res = collection.delete_many({})
+        return jsonify({"message":"Data cleared","deleted":res.deleted_count})
+    return jsonify({"message":"DB disabled"})
 
 # ===== CLEAN TEXT =====
 def clean_text(text):
@@ -100,7 +115,7 @@ def match_score(resume, job):
     vec = vectorizer.transform([resume, job])
     score = cosine_similarity(vec[0], vec[1])[0][0]
 
-    if score != score:  # NaN check
+    if score != score:
         score = 0
 
     return round(score * 100, 2)
@@ -109,7 +124,7 @@ def match_score(resume, job):
 def final_score(conf, match, skills):
     return round(conf*0.5 + match*0.3 + len(skills)*5*0.2, 2)
 
-# ===== DOMAIN GRAPH FIX =====
+# ===== DOMAIN GRAPH =====
 def get_domain_scores(conf, match):
     try:
         conf = float(conf) if conf else 0
@@ -117,64 +132,60 @@ def get_domain_scores(conf, match):
     except:
         conf, match = 0, 0
 
-    domains = {
+    return {
         "Web Dev": round(max(5, min(100, conf * 1.2)), 2),
         "Data Science": round(max(5, min(100, match * 1.1)), 2),
         "Java Dev": round(max(5, min(100, (conf + match) / 2)), 2)
     }
 
-    return domains
-
 # ===== USER ANALYSIS =====
 @app.route("/user_upload", methods=["POST"])
 def user_upload():
+    try:
+        file = request.files["resume"]
+        job = request.form.get("job_description","")
 
-    file = request.files["resume"]
-    job = request.form.get("job_description","")
+        text = extract_text(file)
 
-    text = extract_text(file)
+        skills = get_skills(text)
+        role, conf = predict_role(text)
+        match = match_score(text, job)
+        score = final_score(conf, match, skills)
 
-    skills = get_skills(text)
-    role, conf = predict_role(text)
-    match = match_score(text, job)
-    score = final_score(conf, match, skills)
+        job_words = job.lower().split()
+        missing = list(set([w for w in job_words if w not in text.lower()]))[:5]
 
-    # ===== MISSING SKILLS =====
-    job_words = job.lower().split()
-    missing = [w for w in job_words if w not in text.lower()]
-    missing = list(set(missing))[:5]
+        domains = get_domain_scores(conf, match)
 
-    # ===== FIXED DOMAIN GRAPH =====
-    domains = get_domain_scores(conf, match)
+        suggestion = (
+            "Excellent profile!" if score > 75 else
+            "Good profile, improve skills." if score > 50 else
+            "Needs improvement."
+        )
 
-    # ===== SUGGESTIONS =====
-    if score > 75:
-        suggestion = "Excellent profile! Strong match for this role."
-    elif score > 50:
-        suggestion = "Good profile, improve some skills."
-    else:
-        suggestion = "Needs improvement. Add more relevant skills."
+        return jsonify({
+            "email": get_email(text),
+            "role": role,
+            "confidence": conf,
+            "match": match,
+            "skills": skills,
+            "final_score": score,
+            "missing_skills": missing,
+            "suggestion": suggestion,
+            "domains": domains
+        })
 
-    return jsonify({
-        "email": get_email(text) or "Not Found",
-        "role": role or "Unknown",
-        "confidence": conf or 0,
-        "match": match or 0,
-        "skills": skills or [],
-        "final_score": score or 0,
-        "missing_skills": missing or [],
-        "suggestion": suggestion,
-        "domains": domains or {"Web Dev":10,"Data Science":10,"Java Dev":10}
-    })
+    except Exception as e:
+        print("ERROR:", e)
+        return jsonify({"error": str(e)}), 500
 
 # ===== BULK UPLOAD =====
 @app.route("/bulk_upload", methods=["POST"])
 def bulk_upload():
+    results = []
 
     files = request.files.getlist("resumes")
     job = request.form.get("job_description","")
-
-    results = []
 
     for f in files:
         try:
@@ -194,40 +205,40 @@ def bulk_upload():
                 "skills": skills,
                 "match_score": match,
                 "final_score": score,
-                "domains": domains   # ✅ IMPORTANT FIX
+                "domains": domains
             }
 
-            collection.insert_one(data)
+            if collection:
+                collection.insert_one(data)
+
             results.append(data)
 
         except Exception as e:
             print("ERROR:", e)
 
     results = sorted(results, key=lambda x:x["final_score"], reverse=True)
-
     return jsonify({"results": results})
 
 # ===== SHORTLIST =====
 @app.route("/shortlist")
 def shortlist():
+    if collection:
+        data = list(collection.find({}, {"_id":0}))
+    else:
+        data = []
 
-    n = int(request.args.get("top_n",5))
-    data = list(collection.find({}, {"_id":0}))
-
-    data = sorted(data, key=lambda x:x["final_score"], reverse=True)
-
-    return jsonify({"shortlisted": data[:n]})
+    data = sorted(data, key=lambda x:x.get("final_score",0), reverse=True)
+    return jsonify({"shortlisted": data[:5]})
 
 # ===== DOWNLOAD =====
 @app.route("/download")
 def download():
-
-    data = list(collection.find({}, {"_id":0}))
+    if collection:
+        data = list(collection.find({}, {"_id":0}))
+    else:
+        return jsonify({"error": "DB disabled"})
 
     file = "results.csv"
-
-    if not data:
-        return jsonify({"error": "No data available"})
 
     with open(file,"w",newline="") as f:
         writer = csv.DictWriter(f, fieldnames=data[0].keys())
