@@ -1,0 +1,10 @@
+email,role,confidence,skills,match_score,final_score
+rohit.ds@gmail.com,Data Scientist,48.95,"['python', 'ml']",29.8,35.42
+emma.data@gmail.com,Software Engineer,45.21,['python'],26.31,31.5
+alice.ds@gmail.com,Data Scientist,71.56,"['python', 'ml']",37.77,49.11
+rohit.ds@gmail.com,Data Scientist,48.95,"['python', 'ml']",14.42,30.8
+emma.data@gmail.com,Software Engineer,45.21,['python'],40.68,35.81
+alice.ds@gmail.com,Data Scientist,71.56,"['python', 'ml']",26.61,45.76
+anil.java@gmail.com,Software Engineer,88.71,['java'],18.75,50.98
+david.dev@gmail.com,Software Engineer,84.04,['java'],12.88,46.88
+rahul.java@gmail.com,Software Engineer,90.34,['java'],19.3,51.96

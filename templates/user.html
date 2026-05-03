@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Intelligence</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* ===== SAME CSS (UNCHANGED) ===== */
+body {
+    margin:0;
+    font-family:-apple-system,Segoe UI;
+    color:white;
+    background:#020617;
+    overflow-x:hidden;
+}
+
+.bg-light{
+    position:fixed;
+    width:500px;
+    height:500px;
+    border-radius:50%;
+    filter:blur(120px);
+    opacity:0.25;
+    z-index:-1;
+}
+.bg1{background:#6366f1; top:-100px; left:-100px;}
+.bg2{background:#38bdf8; bottom:-100px; right:-100px;}
+
+header{
+    text-align:center;
+    padding:20px;
+    font-size:24px;
+    font-weight:600;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:350px 1fr;
+    gap:25px;
+    padding:25px;
+}
+
+.card{
+    background:rgba(255,255,255,0.05);
+    backdrop-filter:blur(25px);
+    border-radius:20px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 20px 60px rgba(0,0,0,0.7);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+}
+
+input, textarea{
+    width:100%;
+    padding:12px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    background:#0f172a;
+    color:white;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    margin-top:15px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(90deg,#38bdf8,#6366f1);
+    cursor:pointer;
+}
+
+.right{
+    display:grid;
+    gap:20px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+}
+
+.stat{
+    padding:20px;
+    text-align:center;
+    border-radius:16px;
+    background:rgba(255,255,255,0.05);
+}
+
+.bar-bg{
+    height:8px;
+    background:#1e293b;
+    border-radius:10px;
+}
+
+.bar-fill{
+    height:8px;
+    border-radius:10px;
+    background:linear-gradient(90deg,#38bdf8,#6366f1);
+}
+
+.skill{
+    display:inline-block;
+    padding:6px 12px;
+    margin:5px;
+    border-radius:10px;
+    background:#0f172a;
+}
+
+.missing{
+    background:#3f0d0d;
+}
+
+#emptyState{
+    text-align:center;
+    padding:90px;
+    opacity:0.6;
+}
+
+canvas{
+    background:#0f172a;
+    border-radius:12px;
+    padding:10px;
+}
+
+.watermark{
+    position:fixed;
+    bottom:10px;
+    right:15px;
+    font-size:12px;
+    opacity:0.35;
+    color:#94a3b8;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="bg-light bg1"></div>
+<div class="bg-light bg2"></div>
+
+<header>✨ Resume Intelligence</header>
+
+<div class="container">
+
+<!-- LEFT -->
+<div class="card">
+    <h3>Upload Resume</h3>
+    <input type="file" id="file">
+    <textarea id="job" placeholder="Job Description"></textarea>
+    <button id="analyzeBtn">Analyze</button>
+</div>
+
+<!-- RIGHT -->
+<div class="right">
+
+<div class="card" id="emptyState">
+    Upload a resume to begin 🚀
+</div>
+
+<div class="card" id="statsCard" style="display:none;"></div>
+<div class="card" id="analysisCard" style="display:none;"></div>
+
+</div>
+
+</div>
+
+<div class="watermark">
+    Built by Abdullah • Sami • Charan • Praneth
+</div>
+
+<script>
+
+let radarChart, domainChart;
+
+// 🔥 FIX: attach event properly
+document.getElementById("analyzeBtn").addEventListener("click", analyze);
+
+async function analyze(){
+
+    let fileInput = document.getElementById("file");
+    let file = fileInput.files[0];
+    let job = document.getElementById("job").value;
+
+    if(!file){
+        alert("Upload resume first");
+        return;
+    }
+
+    try{
+
+        let fd = new FormData();
+        fd.append("resume", file);
+        fd.append("job_description", job);
+
+        let res = await fetch("/user_upload", {
+            method: "POST",
+            body: fd
+        });
+
+        if(!res.ok){
+            throw new Error("Server error");
+        }
+
+        let data = await res.json();
+
+        document.getElementById("emptyState").style.display="none";
+        document.getElementById("statsCard").style.display="block";
+        document.getElementById("analysisCard").style.display="block";
+
+        document.getElementById("statsCard").innerHTML = `
+        <div class="stats">
+            <div class="stat"><h2>${data.role}</h2>Role</div>
+            <div class="stat"><h2>${data.confidence}%</h2>Confidence</div>
+            <div class="stat"><h2>${data.final_score}</h2>Score</div>
+        </div>
+        `;
+
+        document.getElementById("analysisCard").innerHTML = `
+        <h3>Match</h3>
+        <div class="bar-bg">
+            <div class="bar-fill" style="width:${data.match}%"></div>
+        </div>
+
+        <h3>Skills</h3>
+        ${data.skills.map(s=>`<span class="skill">${s}</span>`).join("")}
+
+        <h3>Missing</h3>
+        ${data.missing_skills.map(s=>`<span class="skill missing">${s}</span>`).join("")}
+
+        <h3>Suggestion</h3>
+        ${data.suggestion}
+
+        <h3>Profile Strength</h3>
+        <canvas id="radar"></canvas>
+
+        <h3>Domain Fit</h3>
+        <canvas id="domainChart"></canvas>
+        `;
+
+        drawRadar(data);
+        drawDomains(data.domains);
+
+    } catch(err){
+        alert("Error: " + err.message);
+        console.error(err);
+    }
+}
+
+/* RADAR */
+function drawRadar(data){
+    if(radarChart) radarChart.destroy();
+
+    radarChart = new Chart(document.getElementById("radar"),{
+        type:"radar",
+        data:{
+            labels:["Confidence","Match","Skills"],
+            datasets:[{
+                data:[
+                    data.confidence,
+                    data.match,
+                    data.skills.length*10
+                ]
+            }]
+        }
+    });
+}
+
+/* DOMAIN */
+function drawDomains(domains){
+    if(domainChart) domainChart.destroy();
+
+    domainChart = new Chart(document.getElementById("domainChart"),{
+        type:"bar",
+        data:{
+            labels:Object.keys(domains),
+            datasets:[{
+                data:Object.values(domains)
+            }]
+        }
+    });
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+email,role,confidence,skills,match_score,final_score
+michael.web@gmail.com,Software Engineer,76.99,"['Java', 'Html', 'Css', 'Javascript', 'React']",0.0,43.5
+sophia.dev@gmail.com,Software Engineer,71.98,"['Java', 'Html', 'Css', 'Javascript']",0.0,39.99
+john.dev@gmail.com,Software Engineer,79.82,"['Java', 'Html', 'Css', 'Javascript', 'React']",0.0,44.91
+arjun.devops@gmail.com,Software Engineer,78.98,[],0.0,39.49
+sarah.devops@gmail.com,Software Engineer,69.49,[],0.0,34.74
+arun.devops@gmail.com,Software Engineer,71.65,[],0.0,35.83

@@ -1,0 +1,232 @@
+text,role
+"KAVYA REDDY
+Email: kavya.db@gmail.com
+Phone: 9877001122
+SUMMARY
+Database administrator skilled in SQL.
+SKILLS
+SQL, MySQL, PostgreSQL, Database Design
+PROJECTS
+Designed database schema.
+Optimized queries.
+EDUCATION
+B.Tech IT",Database_Admin
+"RAJESH NAIR
+Email: rajesh.db@gmail.com
+Phone: 9009988776
+SUMMARY
+Experienced in database management.
+SKILLS
+Oracle, SQL, DBMS
+PROJECTS
+Maintained large database systems.
+EDUCATION
+B.Tech CSE",Database_Admin
+"PRIYA REDDY
+Email: priya.db@gmail.com
+Phone: 9988776655
+SUMMARY
+Database Administrator with strong SQL skills.
+SKILLS
+SQL, MySQL, PostgreSQL, Database Design
+PROJECTS
+Designed database schema for web application.
+Optimized queries for performance.
+EXPERIENCE
+Database Intern
+Maintained database and performed backups.
+EDUCATION
+B.Tech IT",Database_Admin
+"ROHIT SHARMA
+Email: rohit.ds@gmail.com
+Phone: 9001122334
+SUMMARY
+Data Scientist with expertise in ML and analytics.
+SKILLS
+Python, Pandas, NumPy, Machine Learning, Matplotlib
+PROJECTS
+Built predictive model using regression.
+Performed data visualization.
+EDUCATION
+B.Tech AI",Data_Scientist
+"EMMA WATSON
+Email: emma.data@gmail.com
+Phone: 9876543211
+SUMMARY
+Data analyst skilled in statistical modeling.
+SKILLS
+Python, R, Data Analysis, Visualization
+PROJECTS
+Analyzed datasets using Python.
+Built dashboards.
+EDUCATION
+B.Sc Data Science",Data_Scientist
+"ALICE JOHNSON
+Email: alice.ds@gmail.com
+Phone: 9123456780
+SUMMARY
+Data Scientist skilled in machine learning and data analysis.
+SKILLS
+Python, Pandas, NumPy, Machine Learning, Scikit-learn
+PROJECTS
+Built ML model for prediction using regression.
+Performed data visualization using Matplotlib.
+EXPERIENCE
+Data Analyst Intern
+Worked on data cleaning and analysis.
+EDUCATION
+B.Tech Artificial Intelligence",Data_Scientist
+"ARJUN SINGH
+Email: arjun.devops@gmail.com
+Phone: 9887766554
+SUMMARY
+DevOps engineer with cloud experience.
+SKILLS
+Docker, Kubernetes, AWS, Jenkins
+PROJECTS
+Automated CI/CD pipeline.
+Deployed cloud applications.
+EDUCATION
+B.Tech CSE",DevOps_Engineer
+"SARAH JONES
+Email: sarah.devops@gmail.com
+Phone: 9012345677
+SUMMARY
+DevOps specialist in automation.
+SKILLS
+CI/CD, Docker, AWS
+PROJECTS
+Built deployment pipelines.
+EDUCATION
+B.Tech IT",DevOps_Engineer
+"ARUN VERMA
+Email: arun.devops@gmail.com
+Phone: 9871234560
+SUMMARY
+DevOps Engineer experienced in cloud and automation.
+SKILLS
+Docker, Kubernetes, AWS, CI/CD, Jenkins
+PROJECTS
+Deployed applications using Docker containers.
+Automated CI/CD pipelines.
+EXPERIENCE
+DevOps Intern
+Worked on cloud deployment and monitoring.
+EDUCATION
+B.Tech Computer Science",DevOps_Engineer
+"ANIL KUMAR
+Email: anil.java@gmail.com
+Phone: 9988771122
+SUMMARY
+Backend developer specializing in Java applications.
+SKILLS
+Java, Spring Boot, Hibernate, REST API
+PROJECTS
+Developed backend services.
+Built REST APIs.
+EDUCATION
+B.Tech CSE",Java_Developer
+"DAVID MILLER
+Email: david.dev@gmail.com
+Phone: 9090901112
+SUMMARY
+Java developer with experience in backend systems.
+SKILLS
+Java, Spring, Microservices
+PROJECTS
+Built microservices architecture.
+Worked on backend systems.
+EDUCATION
+B.Tech IT",Java_Developer
+"RAHUL KUMAR
+Email: rahul.java@gmail.com
+Phone: 9012345678
+SUMMARY
+Backend developer specializing in Java technologies.
+SKILLS
+Java, Spring Boot, Hibernate, REST APIs
+PROJECTS
+Developed REST API using Spring Boot.
+Created backend services for web apps.
+EXPERIENCE
+Java Developer Intern
+Worked on backend logic and API integration.
+EDUCATION
+B.Tech Computer Science",Java_Developer
+"NEERAJ GUPTA
+Email: neeraj.ml@gmail.com
+Phone: 9998887776
+SUMMARY
+ML engineer focused on deep learning.
+SKILLS
+Python, TensorFlow, PyTorch, NLP
+PROJECTS
+Built NLP model.
+Worked on deep learning systems.
+EDUCATION
+B.Tech AI",ML_Engineer
+"OLIVIA GREEN
+Email: olivia.ml@gmail.com
+Phone: 9121212121
+SUMMARY
+Machine learning engineer with AI focus.
+SKILLS
+Python, ML, Deep Learning
+PROJECTS
+Developed classification models.
+EDUCATION
+B.Tech AI",ML_Engineer
+"NEHA SHARMA
+Email: neha.ml@gmail.com
+Phone: 9090909090
+SUMMARY
+Machine Learning Engineer focused on deep learning.
+SKILLS
+Python, TensorFlow, PyTorch, Deep Learning
+PROJECTS
+Built image classification model using CNN.
+Worked on NLP text classification.
+EXPERIENCE
+ML Intern
+Developed ML models and optimized performance.
+EDUCATION
+B.Tech AI & ML",ML_Engineer
+"MICHAEL BROWN
+Email: michael.web@gmail.com
+Phone: 9871112223
+SUMMARY
+Frontend developer with strong skills in building responsive web apps.
+SKILLS
+HTML, CSS, JavaScript, React, Tailwind CSS
+PROJECTS
+Developed e-commerce website using React.
+Built responsive UI using Bootstrap.
+EDUCATION
+B.Tech Computer Science",Web_Developer
+"SOPHIA LEE
+Email: sophia.dev@gmail.com
+Phone: 9123456781
+SUMMARY
+Web developer focused on frontend technologies.
+SKILLS
+HTML, CSS, JavaScript, Angular, UI/UX
+PROJECTS
+Created portfolio website.
+Worked on UI enhancements.
+EDUCATION
+B.Tech IT",Web_Developer
+"JOHN SMITH
+Email: john.dev@gmail.com
+Phone: 9876543210
+SUMMARY
+Frontend Developer with experience in building responsive websites.
+SKILLS
+HTML, CSS, JavaScript, React, Bootstrap
+PROJECTS
+Built a portfolio website using React and Tailwind CSS.
+Developed responsive UI components.
+EXPERIENCE
+Frontend Developer Intern
+Worked on UI development using HTML, CSS, JavaScript.
+EDUCATION
+B.Tech Computer Science",Web_Developer

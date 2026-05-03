@@ -1,0 +1,8 @@
+flask
+pymongo
+pdfplumber
+python-docx
+scikit-learn
+gunicorn
+sentence-transformers
+numpy

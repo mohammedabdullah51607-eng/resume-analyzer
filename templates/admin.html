@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Screening</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+    --panel:#0f172a;
+    --accent:#38bdf8;
+    --green:#22c55e;
+    --text:#e5e7eb;
+}
+
+/* ===== BACKGROUND (SUBTLE GRADIENT + GLOW) ===== */
+body{
+    margin:0;
+    font-family:-apple-system,Segoe UI;
+    color:var(--text);
+    background:radial-gradient(circle at 20% 20%, #0f172a, #020617 60%);
+    overflow-x:hidden;
+}
+
+/* soft glow elements */
+.glow{
+    position:fixed;
+    width:400px;
+    height:400px;
+    border-radius:50%;
+    filter:blur(120px);
+    opacity:0.2;
+    z-index:-1;
+}
+.g1{background:#38bdf8; top:-100px; left:-100px;}
+.g2{background:#6366f1; bottom:-100px; right:-100px;}
+
+/* ===== HEADER ===== */
+.header{
+    text-align:center;
+    padding:25px;
+}
+.header h1{
+    margin:0;
+    font-size:28px;
+    font-weight:600;
+}
+.header p{
+    margin-top:5px;
+    color:#94a3b8;
+}
+
+/* ===== LAYOUT ===== */
+.container{
+    display:grid;
+    grid-template-columns:320px 1fr;
+    gap:20px;
+    padding:20px;
+}
+
+/* ===== CARD ===== */
+.card{
+    background:rgba(255,255,255,0.05);
+    backdrop-filter:blur(20px);
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.6);
+    transition:0.25s;
+}
+.card:hover{
+    transform:translateY(-3px);
+}
+
+/* ===== INPUT ===== */
+input,textarea{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:var(--panel);
+    color:white;
+}
+
+/* ===== BUTTON ===== */
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:var(--accent);
+    cursor:pointer;
+    transition:0.25s;
+}
+button:hover{
+    transform:scale(1.03);
+}
+
+/* ===== KPI ===== */
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+}
+.stat{
+    text-align:center;
+    padding:12px;
+    background:var(--panel);
+    border-radius:12px;
+}
+
+/* ===== CHART ===== */
+.chart{
+    height:200px;
+    margin-top:20px;
+}
+
+/* ===== RESULT ===== */
+.result{
+    background:var(--panel);
+    padding:12px;
+    border-radius:12px;
+    margin-top:10px;
+    transition:0.2s;
+}
+.result:hover{
+    transform:translateY(-2px);
+}
+
+/* ===== BAR ===== */
+.bar{
+    height:6px;
+    background:#1e293b;
+    border-radius:10px;
+}
+.bar div{
+    height:6px;
+    background:var(--accent);
+}
+
+/* ===== BADGE ===== */
+.badge{
+    color:gold;
+}
+</style>
+</head>
+
+<body>
+
+<!-- BACKGROUND GLOW -->
+<div class="glow g1"></div>
+<div class="glow g2"></div>
+
+<!-- HEADER -->
+<div class="header">
+    <h1>Resume Screening</h1>
+    <p>Smart candidate analysis and ranking system</p>
+</div>
+
+<div class="container">
+
+<!-- LEFT -->
+<div class="card">
+<h3>Upload Resumes</h3>
+<input type="file" id="files" multiple>
+<textarea id="job" placeholder="Enter Job Description"></textarea>
+
+<button onclick="upload()">Upload & Analyze</button>
+
+<h3>Shortlist</h3>
+<input type="number" id="topn" value="3">
+
+<button onclick="shortlist()">Get Top Candidates</button>
+<button onclick="download()">Download CSV</button>
+<button onclick="clearData()">Clear Data</button>
+</div>
+
+<!-- RIGHT -->
+<div>
+
+<div class="card" id="kpi"></div>
+
+<div class="card">
+<h3>Analytics</h3>
+<canvas id="roleChart" class="chart"></canvas>
+<canvas id="scoreChart" class="chart"></canvas>
+<canvas id="skillChart" class="chart"></canvas>
+</div>
+
+<div class="card">
+<h3>Top Candidate</h3>
+<div id="topCandidate"></div>
+</div>
+
+<div class="card">
+<h3>Candidates</h3>
+<div id="results"></div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let roleChart, scoreChart, skillChart;
+
+/* UPLOAD */
+async function upload(){
+
+    let files=document.getElementById("files").files;
+    let job=document.getElementById("job").value;
+
+    if(files.length===0){
+        alert("Upload resumes first");
+        return;
+    }
+
+    let fd=new FormData();
+    for(let f of files) fd.append("resumes",f);
+    fd.append("job_description",job);
+
+    let res=await fetch("/bulk_upload",{method:"POST",body:fd});
+    let data=await res.json();
+
+    render(data.results);
+}
+
+/* RENDER */
+function render(results){
+
+    let div=document.getElementById("results");
+    div.innerHTML="";
+
+    let roles={}, skills={}, scores=[];
+    let total=0;
+    let top=null;
+
+    results.forEach((r,i)=>{
+
+        roles[r.role]=(roles[r.role]||0)+1;
+        scores.push(r.final_score);
+        total+=r.final_score;
+
+        if(!top || r.final_score > top.final_score){
+            top=r;
+        }
+
+        (r.skills||[]).forEach(s=>{
+            skills[s]=(skills[s]||0)+1;
+        });
+
+        let card=document.createElement("div");
+        card.className="result";
+
+        card.innerHTML=`
+        <b>Rank ${i+1}</b> ${i===0 ? '<span class="badge">🏆</span>' : ''}<br>
+        ${r.email}<br>
+        ${r.role}<br>
+        Score: ${r.final_score}
+        <div class="bar"><div style="width:${r.final_score}%"></div></div>
+        `;
+
+        div.appendChild(card);
+    });
+
+    document.getElementById("kpi").innerHTML=`
+    <div class="stats">
+        <div class="stat">Total<br>${results.length}</div>
+        <div class="stat">Avg<br>${(total/results.length).toFixed(1)}</div>
+        <div class="stat">Top<br>${top?.final_score || 0}</div>
+    </div>
+    `;
+
+    if(top){
+        document.getElementById("topCandidate").innerHTML=`
+        <b>${top.email}</b><br>
+        Role: ${top.role}<br>
+        Score: ${top.final_score} 🏆
+        `;
+    }
+
+    drawRoleChart(roles);
+    drawScoreChart(scores);
+    drawSkillChart(skills);
+}
+
+/* CHARTS */
+function drawRoleChart(data){
+    if(roleChart) roleChart.destroy();
+    roleChart=new Chart(document.getElementById("roleChart"),{
+        type:"doughnut",
+        data:{labels:Object.keys(data),
+        datasets:[{data:Object.values(data),
+        backgroundColor:["#38bdf8","#22c55e","#f59e0b","#ef4444"]}]}
+    });
+}
+
+function drawScoreChart(scores){
+    if(scoreChart) scoreChart.destroy();
+    scoreChart=new Chart(document.getElementById("scoreChart"),{
+        type:"line",
+        data:{labels:scores.map((_,i)=>"C"+(i+1)),
+        datasets:[{data:scores,borderColor:"#38bdf8",tension:0.4}]}
+    });
+}
+
+function drawSkillChart(data){
+    if(skillChart) skillChart.destroy();
+    skillChart=new Chart(document.getElementById("skillChart"),{
+        type:"bar",
+        data:{labels:Object.keys(data),
+        datasets:[{data:Object.values(data),backgroundColor:"#22c55e"}]}
+    });
+}
+
+/* ACTIONS */
+function shortlist(){
+    let n=document.getElementById("topn").value;
+    fetch(`/shortlist?top_n=${n}`)
+    .then(r=>r.json())
+    .then(d=>render(d.shortlisted));
+}
+
+function download(){ window.location="/download"; }
+
+function clearData(){
+    fetch("/clear",{method:"POST"})
+    .then(()=>location.reload());
+}
+
+</script>
+
+</body>
+</html>
